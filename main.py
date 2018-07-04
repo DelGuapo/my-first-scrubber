@@ -1,30 +1,40 @@
-from bs4 import BeautifulSoup
-from urllib.request import urlopen
-from config import config
-from parse import parse
+# global dependencies
+import os
 import re
 
-class macgyver:
+# internal dependencies
+from assets.myConfig import Config,OtherClass
+from assets.parser import Parser
+
+# don't know what this is:
+
+
+class Main:
     """
         this is a class
     """
-    def parse(myDir):
+    def __init__(self):
+        self.counter = 0
+
+    def parse(self, myDir):
         directory = os.fsencode(myDir)
         for file in os.listdir(directory):
+            self.counter += 1
             filename = os.fsdecode(file)
-            if filename.endswith(".asm") or filename.endswith(".py"): 
-                # print(os.path.join(directory, filename))
-                print ("HELLO")
-                continue
-            else:
-                print (filename)
-                continue
-    def pullInfo(url):
-        html = urlopen(url).read().decode('utf-8')
-        soup = BeautifulSoup(html,'html.parser')
-        print('\n',soup.p)
-        print(soup.h1)
-
-    def main():
+            # Init DISCOG parser
+            if self.counter == 1:
+                discog = Parser()
+                discog.go(filename,'discog')
+            # else:
+            #     print('Ignoring [' + filename + '] for development')
+            continue
+    
+    def go(self):
         # need to find out how to execute this function lol
-        go(config.myDir)
+        c = Config()
+        # print(c.myDir)
+        self.parse(c.myDir)
+
+if __name__ == "__main__":
+    m = Main()
+    m.go()

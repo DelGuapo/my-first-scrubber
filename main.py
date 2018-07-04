@@ -1,22 +1,22 @@
-# global dependencies
+# CORE IMPORTS
 import os
 import re
 
-# internal dependencies
+# THIRD PARTY IMPORTS
+
+# INTERNAL IMPORTS
 from assets.myConfig import Config,OtherClass
 from assets.parser import Parser
 
-# don't know what this is:
-
-
 class Main:
     """
-        this is a class
+        this the main class. 
     """
     def __init__(self):
         self.counter = 0
 
     def parse(self, myDir):
+        # IMPORTS myDir FROM CONFIG TO PARSE FOR ARTISTS
         directory = os.fsencode(myDir)
         for file in os.listdir(directory):
             self.counter += 1
@@ -25,16 +25,16 @@ class Main:
             if self.counter == 1:
                 discog = Parser()
                 discog.go(filename,'discog')
-            # else:
+            # else: # COMMENTING OUT FOR DEV PURPOSES.
             #     print('Ignoring [' + filename + '] for development')
             continue
     
     def go(self):
-        # need to find out how to execute this function lol
+        # MAIN FUNCTION FOR MAIN CLASS
         c = Config()
-        # print(c.myDir)
         self.parse(c.myDir)
 
+# MAIN ROUTE TO INTERFACE WITH THE TERMINAL
 if __name__ == "__main__":
     m = Main()
     m.go()

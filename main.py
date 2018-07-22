@@ -5,8 +5,10 @@ import re
 # THIRD PARTY IMPORTS
 
 # INTERNAL IMPORTS
-from assets.myConfig import Config,OtherClass
-from assets.parser import Parser,Album
+from assets.myConfig import AppConfig,AlbumConfig,ArtistConfig
+from assets.parser import Parser
+from assets.discog import DiscogParser
+from assets.html import HTMLParser
 
 class Main:
     """
@@ -28,8 +30,8 @@ class Main:
             if self.counter == 28: ## remove after development
 
                 # PREPARE Discog Instance
-                discog = Parser()
-                discog.prepare(subDir,'discog')
+                discog = Parser('discog')
+                discog.prepare(subDir)
 
                 # Get albums + Info from Discog instance
                 remoteAlbums = list(map(
@@ -53,7 +55,7 @@ class Main:
 
     def go(self):
         # MAIN FUNCTION FOR MAIN CLASS
-        self.config = Config()
+        self.config = AppConfig()
         self.parse(self.config.myDir)
     
     # Python program to illustrate the intersection

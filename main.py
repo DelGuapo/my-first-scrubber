@@ -23,13 +23,13 @@ class Main:
             self.counter += 1
             folderName = os.fsdecode(file) # decode file object into string (folder name)
             subDir = self.config.myDir + '\/' + folderName
-            folderName = 'Pink Floyd, the'
+            folderName = 'crocodiles'
             # Init DISCOG parser
             if self.counter == 28: ## remove after development
 
                 # PREPARE Discog Instance
                 discog = Parser()
-                discog.prepare(folderName,'discog')
+                discog.prepare(subDir,'discog')
 
                 # Get albums + Info from Discog instance
                 remoteAlbums = list(map(
@@ -50,7 +50,7 @@ class Main:
                     idx = remoteAlbums.index(album)
                     self.missingAlbums.append(discog.albums[idx])
             continue
-    
+
     def go(self):
         # MAIN FUNCTION FOR MAIN CLASS
         self.config = Config()

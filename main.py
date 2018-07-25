@@ -25,7 +25,6 @@ class Main:
             self.counter += 1
             folderName = os.fsdecode(file) # decode file object into string (folder name)
             subDir = self.config.myDir + '\/' + folderName
-            folderName = 'crocodiles'
             # Init DISCOG parser
             if self.counter == 28: ## remove after development
 
@@ -34,6 +33,10 @@ class Main:
                 discog.prepare(subDir)
 
                 # Get albums + Info from Discog instance
+                if(discog.errors != None):
+                    print('Error retreiving albums')
+                    return
+
                 remoteAlbums = list(map(
                     lambda album: album.name
                     ,discog.albums
@@ -41,6 +44,8 @@ class Main:
 
                 # Find local albums
                 localAlbums = list(os.listdir(subDir))
+                print(discog.albums)
+                return
                 localAlbums.append(remoteAlbums[1])
 
                 # Find any missing albums

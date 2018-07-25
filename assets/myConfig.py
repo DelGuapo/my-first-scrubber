@@ -1,6 +1,7 @@
 # Core Imports
 import json
 import sys
+import datetime
 
 class AppConfig:
     """
@@ -35,6 +36,10 @@ class ArtistConfig:
             self.source = None
             self.url = None
             self.dir = None
+            self.date = None
+
+    def timeStamp(self):
+        self.date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             
     def makeJson (self):
         return json.dumps(self.__dict__) 

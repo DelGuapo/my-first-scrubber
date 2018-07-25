@@ -26,7 +26,6 @@ class Parser:
         tmp = self.readConfig()
         if(tmp):
             self.artistConfig = ArtistConfig(tmp)
-            self.artistConfig.name = 'crocodiles'
             
         else:
             cfg = ArtistConfig(None)
@@ -35,13 +34,13 @@ class Parser:
             self.artistConfig = cfg
             self.writeConfig()
 
+        self.artistConfig.name = 'crocodiles'
+
         if self.source.upper() == 'DISCOG':
             webParser = DiscogParser(self.artistConfig)
-            newId = webParser.findDiscogId()
-            if newId != self.artistConfig.id:
-                self.artistConfig.id = newId
-            else:
-                self.throwError('Couldn\'t find id')
+            webParser.findAlbums()
+            self.artistConfig = webParser.artist
+            self.writeConfig()
 
     def throwError(self,err):
         if(self.errors == None):

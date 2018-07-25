@@ -14,6 +14,7 @@ class Parser:
         self.startDate = 'NOW'
         self.source = source
         self.albums = []
+        self.errors = None
     
     def prepare(self, artistDir):
         # INTERFACE WITH MAIN.PY
@@ -25,6 +26,8 @@ class Parser:
         tmp = self.readConfig()
         if(tmp):
             self.artistConfig = ArtistConfig(tmp)
+            self.artistConfig.name = 'crocodiles'
+            
         else:
             cfg = ArtistConfig(None)
             cfg.name = self.artist
@@ -34,7 +37,16 @@ class Parser:
 
         if self.source.upper() == 'DISCOG':
             webParser = DiscogParser(self.artistConfig)
-            webParser.findDiscogId()
+            newId = webParser.findDiscogId()
+            if newId != self.artistConfig.id:
+                self.artistConfig.id = newId
+            else:
+                self.throwError('Couldn\'t find id')
+
+    def throwError(self,err):
+        if(self.errors == None):
+            self.errors = []
+        self.errors.append(err)
 
     def putTheInFront(self, artist):
         # removes ', the' and puts it at the beginning for searches
@@ -54,7 +66,6 @@ class Parser:
     def writeConfig(self):
         fileName = self.artistDir + '\/config.'+ self.source
         fileName = 'C:\/Users\/Nicholas Weaver\/Documents\/config.'+ self.source
-        print(fileName)
         f = open(fileName,"w")
         f.write(self.artistConfig.makeJson())
         f.close()

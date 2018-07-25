@@ -33,6 +33,8 @@ class ArtistConfig:
             self.name = None
             self.id = None
             self.source = None
-            self.url = None    
+            self.url = None
+            self.dir = None
+            
     def makeJson (self):
         return json.dumps(self.__dict__) 

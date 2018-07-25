@@ -19,7 +19,6 @@ class DiscogParser:
         self.artist = artistConfig
         self.baseURL = 'https://www.discogs.com'
         self.artistDir = None
-        self.albums = []
         self.errors = None
         if not self.hasArtistId():
             self.findDiscogId()
@@ -32,7 +31,7 @@ class DiscogParser:
             print(' -- Missing Artist ID for [' + self.artist.name + ']')
             return False
         print(' -- FETCHING DISCOG [' + self.artist.name + '] --')
-        searchUrl = 'https://www.discogs.com/artist/' + str(self.artist.id)
+        searchUrl = 'https://www.discogs.com/artist/' + str(self.artist.id) + '?limit=500&page=1'
         
         soup = HTMLParser(searchUrl).pullDOMSoup()
         if(soup == None):
@@ -41,19 +40,37 @@ class DiscogParser:
             
         albumLinks = soup.find('table', {'id' : 'artist'}).find_all("tr")
 
-        for link in albumLinks:
-            print(link)
+        for rw in albumLinks:
+            cols = rw.find_all('td')
+            if rw.get('class') == 'credit_header' or len(cols) == 0:
+                return
+            
             album = AlbumConfig()
-            album.name = link.get('title')
-            # album.url = self.baseURL +  link.get('href')
             album.artistDir = self.artist.dir 
             album.artist = self.artist.name
-            # TODO: add TrackList logic.
-            self.albums.append(album)
+            for rd in cols:            
+                clss = rd.get('class')
+                # if clss != None and len(clss) > 0 and clss.index('image'):
+                if clss != None and len(clss) > 0:
+                    if 'title' in clss:
+                        link = rd.find('a')
+                        if link != None:
+                            album.name = rd.find('a').contents
+                            album.url = self.baseURL + rd.find('a').get('href')
+                    if 'image' in clss:
+                        img = rd.find('img')
+                        if img != None:
+                            album.image = img.get('src')
+
+                    self.artist.albums.append(album.name)
+
+
         
         self.artist.timeStamp()
 
         return True
+    def setProperty(self,obj,key,val):
+        obj[key] = val
 
     def throwError(self,errorString):
         if(self.errors == None):

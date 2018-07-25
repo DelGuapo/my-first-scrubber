@@ -21,6 +21,7 @@ class AlbumConfig:
         self.about = None
         self.artist = None
         self.artistDir = None
+        self.image = None
         self.tracklist = []
 
 class ArtistConfig:
@@ -37,6 +38,8 @@ class ArtistConfig:
             self.url = None
             self.dir = None
             self.date = None
+        
+        self.albums = []
 
     def timeStamp(self):
         self.date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")

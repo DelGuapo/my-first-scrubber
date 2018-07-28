@@ -26,21 +26,19 @@ class Parser:
         tmp = self.readConfig()
         if(tmp):
             self.artistConfig = ArtistConfig(tmp)
-            
         else:
             cfg = ArtistConfig(None)
             cfg.name = self.artist
             cfg.source = self.source
+            cfg.dir = self.artistDir
             self.artistConfig = cfg
-            self.writeConfig()
-
-        self.artistConfig.name = 'crocodiles'
-
         if self.source.upper() == 'DISCOG':
             webParser = DiscogParser(self.artistConfig)
             webParser.findAlbums()
             self.artistConfig = webParser.artist
-            self.writeConfig()
+
+        self.albums = webParser.artist.albums
+        self.writeConfig()
 
     def throwError(self,err):
         if(self.errors == None):
@@ -64,14 +62,13 @@ class Parser:
 
     def writeConfig(self):
         fileName = self.artistDir + '\/config.'+ self.source
-        fileName = 'C:\/Users\/Nicholas Weaver\/Documents\/config.'+ self.source
         f = open(fileName,"w")
+        # self.artistConfig.dir = self.artistDir
         f.write(self.artistConfig.makeJson())
         f.close()
 
     def readConfig(self):
         fileName = self.artistDir + '\/config.'+ self.source
-        fileName = 'C:\/Users\/Nicholas Weaver\/Documents\/config.'+ self.source
         if(os.path.isfile(fileName)):
             f = open(fileName, 'r') 
             return f.read()

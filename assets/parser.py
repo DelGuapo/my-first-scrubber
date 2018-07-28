@@ -1,91 +1,49 @@
 # CORE IMPORTS
-import requests
 import os
-import json
-import sys
 
-# THIRD PARTY IMPORTS
-from bs4 import BeautifulSoup
-
-class Album:
-    """
-        object 
-    """
-    def __init__(self):
-        self.name = None
-        self.url = None
-        self.about = None
-        self.artist = None
-        self.artistDir = None
-        self.tracklist = []
-
-class ArtistConfig:
-    """
-        Config object 
-    """
-    def __init__(self,jsonString):
-        if(jsonString != None):
-            self.__dict__ = json.loads(jsonString)
-        else:
-            self.name = None
-            self.id = None
-            self.source = None
-            self.url = None    
-    def makeJson (self):
-        return json.dumps(self.__dict__) 
-
+# APP DEPENDENCIEES
+from .discog import DiscogParser
+from .myConfig import ArtistConfig,AlbumConfig
 
 
 class Parser:
     """
     This class parses files on local directory
     """
-    def __init__(self):
+    def __init__(self,source):
         self.startDate = 'NOW'
+        self.source = source
+        self.albums = []
+        self.errors = None
     
-    def prepare(self, artistDir, source):
+    def prepare(self, artistDir):
         # INTERFACE WITH MAIN.PY
         self.artistDir = artistDir
         artist = artistDir.split('\/')[-1]
         self.artist = self.putTheInFront(artist)
-        self.source = source
-        
-        if source.upper() == 'DISCOG':
-            self.parseDiscog()
-            # TODO: SETUP OTHER PARSERS
 
         # Try to read config:
         tmp = self.readConfig()
-
         if(tmp):
             self.artistConfig = ArtistConfig(tmp)
         else:
             cfg = ArtistConfig(None)
             cfg.name = self.artist
             cfg.source = self.source
+            cfg.dir = self.artistDir
             self.artistConfig = cfg
-            self.writeConfig()
+        if self.source.upper() == 'DISCOG':
+            webParser = DiscogParser(self.artistConfig)
+            webParser.findAlbums()
+            self.artistConfig = webParser.artist
 
-    def parseDiscog(self):
-        """
-            First search with keyword 
-        """
-        print(' -- FETCHING DISCOG: [' + self.artist + '] --')
-        discogTitle = self.artist.replace(' ','+')
-        self.baseURL = 'https://www.discogs.com'
-        self.URL = 'https://www.discogs.com/search/?q=' + discogTitle + '&type=master'
-        soup = self.pullDOMSoup()
-        self.albums = []
-        links = soup.findAll("a", {"class": "search_result_title"})
+        self.albums = webParser.artist.albums
+        self.writeConfig()
 
-        for link in links:
-            album = Album()
-            album.name = link.get('title')
-            album.url = self.baseURL +  link.get('href')
-            album.artistDir = self.artistDir
-            album.artist = self.artist
-            # TODO: add TrackList logic.
-            self.albums.append(album)
+    def throwError(self,err):
+        if(self.errors == None):
+            self.errors = []
+        self.errors.append(err)
 
     def putTheInFront(self, artist):
         # removes ', the' and puts it at the beginning for searches
@@ -104,25 +62,14 @@ class Parser:
 
     def writeConfig(self):
         fileName = self.artistDir + '\/config.'+ self.source
-        fileName = 'C:\/Users\/Nicholas Weaver\/Documents\/config.'+ self.source
-        print(fileName)
         f = open(fileName,"w")
+        # self.artistConfig.dir = self.artistDir
         f.write(self.artistConfig.makeJson())
         f.close()
 
     def readConfig(self):
         fileName = self.artistDir + '\/config.'+ self.source
-        fileName = 'C:\/Users\/Nicholas Weaver\/Documents\/config.'+ self.source
         if(os.path.isfile(fileName)):
             f = open(fileName, 'r') 
             return f.read()
         return False
-
-    def pullDOMSoup(self):
-        # PULLS HTML PAGE INFO FROM URL
-        page = requests.get(self.URL)
-        if page.status_code == 200:
-            soup = BeautifulSoup(page.content, 'html.parser')
-            return soup
-        else:
-            return None

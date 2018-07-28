@@ -5,8 +5,11 @@ import re
 # THIRD PARTY IMPORTS
 
 # INTERNAL IMPORTS
-from assets.myConfig import Config,OtherClass
-from assets.parser import Parser,Album
+from assets.myConfig import AppConfig,AlbumConfig,ArtistConfig
+from assets.parser import Parser
+from assets.discog import DiscogParser
+from assets.html import HTMLParser
+from assets.pyCommon import wait
 
 class Main:
     """
@@ -15,6 +18,15 @@ class Main:
     def __init__(self):
         self.counter = 0
         self.missingAlbums = []
+        self.csvReport = 'Artist,Album,URL,Exists Locally' + chr(10)
+
+    def writeReport(self,fileName = 'mac_report.csv'):
+        print('Writing ' + fileName)
+        fileName = self.config.myDir + '\/' + fileName
+        f = open(fileName,"w")
+        # self.artistConfig.dir = self.artistDir
+        f.write(self.csvReport)
+        f.close()
 
     def parse(self, myDir):
         # IMPORTS myDir FROM CONFIG TO PARSE FOR ARTISTS
@@ -23,37 +35,55 @@ class Main:
             self.counter += 1
             folderName = os.fsdecode(file) # decode file object into string (folder name)
             subDir = self.config.myDir + '\/' + folderName
-            folderName = 'crocodiles'
-            # Init DISCOG parser
-            if self.counter == 28: ## remove after development
+            if not os.path.isdir(subDir): continue
+            # PREPARE Discog Instance
+            discog = Parser('discog')
+            discog.prepare(subDir)
 
-                # PREPARE Discog Instance
-                discog = Parser()
-                discog.prepare(subDir,'discog')
+            # Get albums + Info from Discog instance
+            if(discog.errors != None):
+                print('Error retreiving albums')
+                return
 
-                # Get albums + Info from Discog instance
-                remoteAlbums = list(map(
-                    lambda album: album.name
-                    ,discog.albums
-                    ))
+            remoteAlbums = list(map(
+                lambda album: album.name
+                ,discog.albums
+                ))
 
-                # Find local albums
-                localAlbums = list(os.listdir(subDir))
-                localAlbums.append(remoteAlbums[1])
+            # Find local albums
+            localAlbums = list(os.listdir(subDir))
+            # print('local: ' + str(len(localAlbums)) + '; remote: ' + str(len(remoteAlbums)))
 
-                # Find any missing albums
-                alignedAlbums = self.listIntersect(remoteAlbums,localAlbums)
-                misAlignedAlbums = [album for album in remoteAlbums if album not in alignedAlbums]
+            # Find any missing albums
+            alignedAlbums = self.listIntersect(remoteAlbums,localAlbums)
 
-                # Add missing albums to master list to report to user
-                for album in misAlignedAlbums:
-                    idx = remoteAlbums.index(album)
-                    self.missingAlbums.append(discog.albums[idx])
-            continue
+            for album in discog.albums:
+                album.exists = album.name in alignedAlbums
+
+            self.transpileAlbums(discog.albums)
+
+            misAlignedAlbums = [album for album in remoteAlbums if album not in alignedAlbums]
+            
+            # Add missing albums to master list to report to user
+            for album in misAlignedAlbums:
+                idx = remoteAlbums.index(album)
+                self.missingAlbums.append(discog.albums[idx])
+        
+        self.writeReport()
+
+    def transpileAlbums(self,albums):
+        for album in albums:
+            s = (album.artist or '') + ','
+            s += (album.name or '') + ','
+            # s += (album.image or '') + ','
+            s += (album.url or '') + ','
+            s += str(album.exists)
+
+            self.csvReport += s + chr(10)
 
     def go(self):
         # MAIN FUNCTION FOR MAIN CLASS
-        self.config = Config()
+        self.config = AppConfig()
         self.parse(self.config.myDir)
     
     # Python program to illustrate the intersection
@@ -65,7 +95,10 @@ class Main:
         ))
         return [value for value in lst1 if value.upper() in list2]
 
+
 # MAIN ROUTE TO INTERFACE WITH THE TERMINAL
-if __name__ == "__main__":
-    m = Main()
-    m.go()
+
+m = Main()
+m.go()
+print('Terminating')
+wait(5)

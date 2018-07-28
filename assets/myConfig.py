@@ -8,7 +8,7 @@ class AppConfig:
         Init Function (constructor);
     """
     def __init__(self):
-        self.myDir = 'C:\/Users\/Nicholas Weaver'
+        self.myDir = 'C:\/Users\/Nicholas Weaver\/_My Music'
 
 
 class AlbumConfig:
@@ -22,6 +22,7 @@ class AlbumConfig:
         self.artist = None
         self.artistDir = None
         self.image = None
+        self.exists = False
         self.tracklist = []
 
 class ArtistConfig:
@@ -45,4 +46,6 @@ class ArtistConfig:
         self.date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             
     def makeJson (self):
-        return json.dumps(self.__dict__) 
+        obj = self.__dict__
+        obj['albums'] = [] # <<-- until i learn to JSON serialize a nested object
+        return json.dumps(obj) 

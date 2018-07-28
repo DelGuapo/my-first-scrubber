@@ -19,9 +19,10 @@ class DiscogParser:
         self.artist = artistConfig
         self.baseURL = 'https://www.discogs.com'
         self.artistDir = None
-        self.errors = None
-        if not self.hasArtistId():
-            self.findDiscogId()
+        self.errors = []
+        if not self.hasArtistId() and not self.findDiscogId():
+            for err in self.errors:
+                if err != None: print('    -- ' + err)
 
     def hasArtistId(self):
         return hasattr(self.artist,'id') and self.artist.id != -1 and self.artist.id != None
@@ -39,7 +40,7 @@ class DiscogParser:
             return False
             
         albumLinks = soup.find('table', {'id' : 'artist'}).find_all("tr")
-
+        tmpAlbums = []
         for rw in albumLinks:
             cols = rw.find_all('td')
             if rw.get('class') == 'credit_header' or len(cols) == 0:
@@ -55,24 +56,25 @@ class DiscogParser:
                     if 'title' in clss:
                         link = rd.find('a')
                         if link != None:
-                            album.name = rd.find('a').contents
+                            tmpName = rd.find('a').contents
+                            if tmpName != None:
+                                album.name = tmpName[0]
                             album.url = self.baseURL + rd.find('a').get('href')
                     if 'image' in clss:
                         img = rd.find('img')
                         if img != None:
                             album.image = img.get('src')
 
-                    self.artist.albums.append(album.name)
-
-
-        
+                    if(album.name != None and album.name not in tmpAlbums):
+                        tmpAlbums.append(album.name)
+                        self.artist.albums.append(album)        
         self.artist.timeStamp()
-
         return True
     def setProperty(self,obj,key,val):
         obj[key] = val
 
     def throwError(self,errorString):
+        print(errorString)
         if(self.errors == None):
             self.errors = []
         self.errors.append(errorString)
@@ -83,14 +85,12 @@ class DiscogParser:
         """
         print(' -- Finding Discog artist ID for [' + self.artist.name + '] --')
         discogTitle = self.artist.name.replace(' ','+')
-        searchUrl = 'https://www.discogs.com/search/?q=' + discogTitle + '&type=master'
-        
+        searchUrl = 'https://www.discogs.com/search/?limit=250&q=' + discogTitle + '&type=master'
+        print('   -- ' + searchUrl)
         soup = HTMLParser(searchUrl).pullDOMSoup()
         if(soup == None):
             self.throwError('Could not pull Info')
             return False
-
-        self.albums = []
 
         artistLinks = soup.findAll(href=re.compile('/artist/'))
         foundIds = []
@@ -99,8 +99,7 @@ class DiscogParser:
             tmpId = link.get('href').replace('/artist/','').split('-')[0]
             tmpArtist = tmpContent[0].upper() if len(tmpContent) > 0 else ''
             if self.artist.name.upper() == tmpArtist and tmpId.isnumeric():
-                foundIds.append(int(tmpId))
-        
+                foundIds.append(int(tmpId))  
 
         if len(foundIds) > 0:
             # s = Counter(foundIds)

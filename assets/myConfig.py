@@ -8,7 +8,10 @@ class AppConfig:
         Init Function (constructor);
     """
     def __init__(self):
+        # Nick's Drive
         self.myDir = 'C:\/Users\/Nicholas Weaver\/_My Music'
+        # Mike's Drive 
+        # self.myDir = 'D:\/My Music'
 
 
 class AlbumConfig:

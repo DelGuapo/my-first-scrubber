@@ -1,6 +1,7 @@
 # CORE Dependencies
 import sys
 import re
+import urllib
 
 # THIRD PARTY IMPORTS
 from bs4 import BeautifulSoup
@@ -32,7 +33,8 @@ class DiscogParser:
             print(' -- Missing Artist ID for [' + self.artist.name + ']')
             return False
         print(' -- FETCHING DISCOG [' + self.artist.name + '] --')
-        searchUrl = 'https://www.discogs.com/artist/' + str(self.artist.id) + '?limit=500&page=1'
+        params = { 'limit' : '500', 'page' : '1'}
+        searchUrl = 'https://www.discogs.com/artist/' + str(self.artist.id) + '?' + urllib.parse.urlencode(params)
         
         soup = HTMLParser(searchUrl).pullDOMSoup()
         if(soup == None):
@@ -84,8 +86,8 @@ class DiscogParser:
             Search the website with a generic keyword search to find the artist ID
         """
         print(' -- Finding Discog artist ID for [' + self.artist.name + '] --')
-        discogTitle = self.artist.name.replace(' ','+')
-        searchUrl = 'https://www.discogs.com/search/?limit=250&q=' + discogTitle + '&type=master'
+        params = { 'q':self.artist.name,'limit' : '500', 'type' : 'master'}
+        searchUrl = 'https://www.discogs.com/search/?' + urllib.parse.urlencode(params)
         print('   -- ' + searchUrl)
         soup = HTMLParser(searchUrl).pullDOMSoup()
         if(soup == None):

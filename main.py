@@ -20,13 +20,9 @@ class Main:
         self.missingAlbums = []
         self.csvReport = 'Artist,Album,URL,Exists Locally' + chr(10)
 
-    def writeReport(self,fileName = 'mac_report.csv'):
-        print('Writing ' + fileName)
-        fileName = self.config.myDir + '\/' + fileName
-        f = open(fileName,"w")
-        # self.artistConfig.dir = self.artistDir
-        f.write(self.csvReport)
-        f.close()
+    def writeReport(self):
+        self.reportStream.close()
+
 
     def parse(self, myDir):
         # IMPORTS myDir FROM CONFIG TO PARSE FOR ARTISTS
@@ -78,12 +74,14 @@ class Main:
             # s += (album.image or '') + ','
             s += (album.url or '') + ','
             s += str(album.exists)
-
+            self.reportStream.write(s + chr(10))
             self.csvReport += s + chr(10)
 
     def go(self):
         # MAIN FUNCTION FOR MAIN CLASS
         self.config = AppConfig()
+        fileName = self.config.myDir + '\/mac_report.csv'
+        self.reportStream = open(fileName,"w",encoding='utf-8') # <<== until we figure how to encode correctly, force utf-8 encoding.
         self.parse(self.config.myDir)
     
     # Python program to illustrate the intersection

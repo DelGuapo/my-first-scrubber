@@ -18,7 +18,7 @@ class Main:
     def __init__(self):
         self.counter = 0
         self.missingAlbums = []
-        self.csvReport = 'Artist,Album,URL,Exists Locally' + chr(10)
+        self.csvReport = 'Artist|Album|URL|Exists Locally' + chr(10)
 
     def writeReport(self):
         self.reportStream.close()
@@ -69,10 +69,10 @@ class Main:
 
     def transpileAlbums(self,albums):
         for album in albums:
-            s = (album.artist or '') + ','
-            s += (album.name or '') + ','
+            s = (album.artist or '') + '|'
+            s += (album.name or '') + '|'
             # s += (album.image or '') + ','
-            s += (album.url or '') + ','
+            s += (album.url or '') + '|'
             s += str(album.exists)
             self.reportStream.write(s + chr(10))
             self.csvReport += s + chr(10)
@@ -80,7 +80,7 @@ class Main:
     def go(self):
         # MAIN FUNCTION FOR MAIN CLASS
         self.config = AppConfig()
-        fileName = self.config.myDir + '\/mac_report.csv'
+        fileName = self.config.myDir + '\/mac_report.txt'
         self.reportStream = open(fileName,"w",encoding='utf-8') # <<== until we figure how to encode correctly, force utf-8 encoding.
         self.parse(self.config.myDir)
     

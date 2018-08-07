@@ -56,7 +56,7 @@ class Main:
             for album in discog.albums:
                 album.exists = album.name in alignedAlbums
 
-            self.transpileAlbums(discog.albums)
+            self.transpileAlbums(discog)
 
             misAlignedAlbums = [album for album in remoteAlbums if album not in alignedAlbums]
             
@@ -67,9 +67,10 @@ class Main:
         
         self.writeReport()
 
-    def transpileAlbums(self,albums):
-        for album in albums:
-            s = (album.artist or '') + '|'
+    def transpileAlbums(self,parser):
+        for album in parser.albums:
+            s = (str(parser.artistConfig.id) or '') + '|'
+            s += (album.artist or '') + '|'
             s += (album.name or '') + '|'
             # s += (album.image or '') + ','
             s += (album.url or '') + '|'
